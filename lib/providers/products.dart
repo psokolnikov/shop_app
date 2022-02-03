@@ -48,8 +48,21 @@ class Products with ChangeNotifier {
     return _items.where((item) => item.isFavorite).toList();
   }
 
-  void addProduct() {
-    // _items.add(value);
+  void addProduct(Product product) {
+    final newProduct = Product(
+      id: DateTime.now().toString(),
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      imageUrl: product.imageUrl,
+    );
+    _items.insert(0, newProduct);
+    notifyListeners();
+  }
+
+  void editProduct(Product product) {
+    var index = _items.indexWhere((item) => item.id == product.id);
+    _items[index] = product;
     notifyListeners();
   }
 
@@ -57,13 +70,8 @@ class Products with ChangeNotifier {
     return _items.singleWhere((product) => product.id == id);
   }
 
-  // void showFavoritesOnly() {
-  //   _showFavoritesOnly = true;
-  //   notifyListeners();
-  // }
-
-  // void showAll() {
-  //   _showFavoritesOnly = false;
-  //   notifyListeners();
-  // }
+  void deleteProduct(String id) {
+    _items.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
 }
