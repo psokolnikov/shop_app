@@ -33,11 +33,22 @@ class OrdersScreen extends StatelessWidget {
             return RefreshIndicator(
               onRefresh: () => _refreshOrders(context),
               child: Consumer<Orders>(
-                builder: (ctx, ordersData, child) => ListView.builder(
-                    itemCount: ordersData.orders.length,
-                    itemBuilder: (ctx, index) {
-                      return OrderItem(ordersData.orders[index]);
-                    }),
+                builder: (ctx, ordersData, child) =>
+                    ordersData.orders.length == 0
+                        ? Center(
+                            child: Text(
+                              'No orders found',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: ordersData.orders.length,
+                            itemBuilder: (ctx, index) {
+                              return OrderItem(ordersData.orders[index]);
+                            }),
               ),
             );
           }
@@ -46,4 +57,3 @@ class OrdersScreen extends StatelessWidget {
     );
   }
 }
-

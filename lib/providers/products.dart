@@ -7,7 +7,11 @@ import 'package:http/http.dart' as http;
 import 'product.dart';
 
 class Products with ChangeNotifier {
-  List<Product> _items = [];
+  final String? authToken;
+  final String? userId;
+  List<Product> _items;
+
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     return _items.toList();
@@ -17,18 +21,40 @@ class Products with ChangeNotifier {
     return _items.where((item) => item.isFavorite).toList();
   }
 
-  Future<void> fetchProducts() async {
-    final url = Uri.https(
+  Future<void> fetchProducts({bool filterByUser = false}) async {
+    final queryParameters = filterByUser
+        ? {
+            'auth': authToken,
+            'orderBy': json.encode('userId'),
+            'equalTo': json.encode(userId)
+          }
+        : {
+            'auth': authToken,
+          };
+
+    final productsUrl = Uri.https(
+      'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
+      '/products.json',
+      queryParameters,
+    );
+
+    final favoritesUrl = Uri.https(
         'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
-        '/products.json');
+        '/favorites/${userId}.json',
+        {'auth': authToken});
 
     try {
       final List<Product> loadedProducts = [];
-      final response = await http.get(url);
+      final response = await http.get(productsUrl);
       final extractedData = json.decode(response.body) as Map<String, dynamic>?;
       if (extractedData == null) {
+        _items.clear();
         return;
       }
+
+      final favoriteResponse = await http.get(favoritesUrl);
+      final favoriteData = json.decode(favoriteResponse.body);
+
       extractedData.forEach((productId, productData) {
         loadedProducts.add(Product(
           id: productId,
@@ -36,7 +62,8 @@ class Products with ChangeNotifier {
           description: productData['description'],
           price: productData['price'],
           imageUrl: productData['imageUrl'],
-          isFavorite: productData['isFavorite'],
+          isFavorite:
+              favoriteData != null && (favoriteData[productId] ?? false),
         ));
       });
       _items = loadedProducts;
@@ -50,7 +77,8 @@ class Products with ChangeNotifier {
   Future<void> addProduct(Product product) async {
     final url = Uri.https(
         'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
-        '/products.json');
+        '/products.json',
+        {'auth': authToken});
 
     try {
       final response = await http.post(url,
@@ -59,7 +87,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'imageUrl': product.imageUrl,
             'price': product.price,
-            'isFavorite': product.isFavorite,
+            'userId': userId,
           }));
       final newProduct = Product(
         id: json.decode(response.body)['name'],
@@ -79,7 +107,8 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(Product product) async {
     final url = Uri.https(
         'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
-        '/products/${product.id}.json');
+        '/products/${product.id}.json',
+        {'auth': authToken});
     await http.patch(url,
         body: json.encode({
           'title': product.title,
@@ -104,12 +133,13 @@ class Products with ChangeNotifier {
 
     final url = Uri.https(
         'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
-        '/products/${deletingProduct.id}.json');
+        '/products/${deletingProduct.id}.json',
+        {'auth': authToken});
     final response = await http.delete(url);
     if (response.statusCode >= 400) {
       _items.insert(deletingProductIndex, deletingProduct);
       notifyListeners();
-      throw HttpException('Could not delete product.', uri: url);
+      throw HttpException('Could not delete product.');
     }
   }
 }

@@ -19,7 +19,11 @@ class OrderItem {
 }
 
 class Orders with ChangeNotifier {
+  final String? authToken;
+  final String? userId;
   List<OrderItem> _orders = [];
+
+  Orders(this.authToken, this.userId, this._orders);
 
   List<OrderItem> get orders {
     return _orders.toList();
@@ -28,15 +32,16 @@ class Orders with ChangeNotifier {
   Future<void> fetchOrders() async {
     final url = Uri.https(
         'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
-        '/orders.json');
-    final List<OrderItem> loadedOrders = [];
+        '/orders/$userId.json',
+        {'auth': authToken});
     final response = await http.get(url);
-        print(response.statusCode);
     final extractedData = json.decode(response.body) as Map<String, dynamic>?;
     if (extractedData == null) {
+      _orders.clear();
       return;
     }
 
+    final List<OrderItem> loadedOrders = [];
     extractedData.forEach((orderId, orderData) {
       loadedOrders.add(OrderItem(
         id: orderId,
@@ -59,7 +64,8 @@ class Orders with ChangeNotifier {
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final url = Uri.https(
         'flutter-tutorial-ec5ee-default-rtdb.europe-west1.firebasedatabase.app',
-        '/orders.json');
+        '/orders/$userId.json',
+        {'auth': authToken});
     final timestamp = DateTime.now();
     try {
       final response = await http.post(url,

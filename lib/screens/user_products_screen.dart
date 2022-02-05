@@ -11,12 +11,11 @@ class UserProductsScreen extends StatelessWidget {
   static const routeName = '/user-products';
 
   Future<void> _refreshProducts(BuildContext context) {
-    return Provider.of<Products>(context, listen: false).fetchProducts();
+    return Provider.of<Products>(context, listen: false).fetchProducts(filterByUser: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    // final productsData = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Products'),
