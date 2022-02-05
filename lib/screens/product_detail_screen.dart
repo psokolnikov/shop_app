@@ -13,16 +13,14 @@ class ProductDetailScreen extends StatelessWidget {
     final selectedProduct = productsData.findById(productId);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(selectedProduct.title),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 300,
-              width: double.infinity,
-              child: Hero(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(selectedProduct.title),
+              background: Hero(
                 tag: selectedProduct.id,
                 child: Image.network(
                   selectedProduct.imageUrl,
@@ -30,7 +28,9 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(
+          ),
+          SliverList(delegate: SliverChildListDelegate([
+           SizedBox(
               height: 10,
             ),
             Text(
@@ -39,6 +39,7 @@ class ProductDetailScreen extends StatelessWidget {
                 color: Colors.grey,
                 fontSize: 20,
               ),
+              textAlign: TextAlign.center,
             ),
             SizedBox(
               height: 10,
@@ -54,8 +55,11 @@ class ProductDetailScreen extends StatelessWidget {
                 softWrap: true,
               ),
             ),
-          ],
-        ),
+            SizedBox(height: 900,)
+          ])
+
+          )
+        ],
       ),
     );
   }
