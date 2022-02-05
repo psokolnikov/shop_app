@@ -14,6 +14,7 @@ import 'screens/splash_screen.dart';
 import 'providers/products.dart';
 import 'providers/cart.dart';
 import 'providers/orders.dart';
+import 'helpers/custom_route.dart';
 
 void main() async {
   dotenv.load(fileName: ".env");
@@ -42,9 +43,14 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'MyShop',
           theme: ThemeData(
-              primarySwatch: Colors.purple,
-              accentColor: Colors.deepOrange,
-              fontFamily: 'Lato'),
+            primarySwatch: Colors.purple,
+            accentColor: Colors.deepOrange,
+            fontFamily: 'Lato',
+            pageTransitionsTheme: PageTransitionsTheme(builders: {
+              TargetPlatform.android: CustomPageTransitionBuilder(),
+              TargetPlatform.iOS: CustomPageTransitionBuilder(),
+            }),
+          ),
           home: auth.isAuth
               ? ProductsOverviewScreen()
               : FutureBuilder(
